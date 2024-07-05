@@ -687,14 +687,106 @@ CREATE_SYMLINK(lib${LIBRARY_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX} ${STATIC_LIBRARY
 ADD_DEPENDENCIES(${LIBRARY_NAME} DEPENDENCIES_FOR_PACKAGE)
 
 ########## Packaging ##########
+set(hdrs ${MACPP_SOURCES})
+list(FILTER hdrs INCLUDE REGEX "^.*\.((hpp)|h)$")
+TARGET_INCLUDE_DIRECTORIES(${LIBRARY_NAME} PUBLIC  $<INSTALL_INTERFACE:include/mariadb> $<INSTALL_INTERFACE:include/mariadb/conncpp> )
+target_sources(${LIBRARY_NAME} PUBLIC
+            FILE_SET public_headers
+            TYPE HEADERS
+            BASE_DIRS 
+                include
+            FILES 
+                   "include/conncpp.hpp"
+                   "include/conncpp/Connection.hpp"
+                   "include/conncpp/Statement.hpp"
+                   "include/conncpp/ResultSet.hpp"
+                   "include/conncpp/PreparedStatement.hpp"
+                   "include/conncpp/ParameterMetaData.hpp"
+                   "include/conncpp/ResultSetMetaData.hpp"
+                   "include/conncpp/DatabaseMetaData.hpp"
+                   "include/conncpp/CallableStatement.hpp"
+                   "include/conncpp/SQLString.hpp"
+                   "include/conncpp/Savepoint.hpp"
+                   "include/conncpp/Warning.hpp"
+                   "include/conncpp/Exception.hpp"
+                   "include/conncpp/jdbccompat.hpp"
+                   "include/conncpp/Driver.hpp"
+                   "include/conncpp/DriverManager.hpp"
+                   "include/conncpp/Types.hpp"
+                   "include/conncpp/buildconf.hpp"
+                   "include/conncpp/CArray.hpp"
+                   "include/conncpp/Properties.hpp"
+                   "include/conncpp/XAConnection.hpp"
+                   "include/conncpp/List.hpp"
+                   "include/conncpp/PooledConnection.hpp"
+                   "include/conncpp/compat/Array.hpp"
+                   "include/conncpp/compat/Executor.hpp"
+                   "include/conncpp/compat/Struct.hpp"
+                   "include/conncpp/compat/Object.hpp"
+                   "include/conncpp/compat/SQLType.hpp"
+                   "include/conncpp/compat/XAResource.hpp"
+                   "include/MariaDbDataSource.hpp"
+        )
 
-INSTALL(TARGETS ${LIBRARY_NAME}
+        
+target_sources(mariadbclient PUBLIC
+FILE_SET public_headers1
+TYPE HEADERS
+BASE_DIRS 
+      ${CMAKE_BINARY_DIR}/libmariadb/include/
+FILES 
+      ${CMAKE_BINARY_DIR}/libmariadb/include/config.h
+      ${CMAKE_BINARY_DIR}/libmariadb/include/ma_config.h
+      ${CMAKE_BINARY_DIR}/libmariadb/include/mariadb_version.h
+)
+
+target_sources(mariadbclient PUBLIC
+        FILE_SET public_headers2
+        TYPE HEADERS
+        BASE_DIRS 
+              libmariadb/include/
+        FILES 
+          libmariadb/include/mariadb/ma_io.h 
+          libmariadb/include/mysql/client_plugin.h 
+          libmariadb/include/mysql/plugin_auth.h 
+          libmariadb/include/errmsg.h 
+          libmariadb/include/ma_common.h 
+          libmariadb/include/ma_compress.h 
+          libmariadb/include/ma_config.h.in 
+          libmariadb/include/ma_context.h 
+          libmariadb/include/ma_crypt.h 
+          libmariadb/include/ma_decimal.h 
+          libmariadb/include/ma_global.h 
+          libmariadb/include/ma_hash.h 
+          libmariadb/include/ma_hashtbl.h 
+          libmariadb/include/ma_list.h 
+          libmariadb/include/ma_priv.h 
+          libmariadb/include/ma_pthread.h 
+          libmariadb/include/ma_pvio.h 
+          libmariadb/include/ma_server_error.h 
+          libmariadb/include/ma_sha1.h 
+          libmariadb/include/ma_string.h 
+          libmariadb/include/ma_sys.h 
+          libmariadb/include/ma_tls.h 
+          libmariadb/include/mariadb_async.h 
+          libmariadb/include/mariadb_com.h 
+          libmariadb/include/mariadb_ctype.h 
+          libmariadb/include/mariadb_dyncol.h 
+          libmariadb/include/mariadb_rpl.h 
+          libmariadb/include/mariadb_stmt.h 
+          libmariadb/include/mariadb_version.h.in 
+          libmariadb/include/mysql.h 
+          libmariadb/include/mysqld_error.h
+    )
+
+
+INSTALL(TARGETS ${LIBRARY_NAME} mariadbclient EXPORT MariaDBConfig
 LIBRARY DESTINATION ${INSTALL_LIBDIR}
-COMPONENT SharedLibraries)
-INSTALL(TARGETS
-${STATIC_LIBRARY_NAME}
-ARCHIVE DESTINATION ${INSTALL_LIBDIR}
-COMPONENT Development)
+FILE_SET public_headers DESTINATION include/mariadb
+FILE_SET public_headers1 DESTINATION include/mariadb
+FILE_SET public_headers2 DESTINATION include/mariadb
+PUBLIC_HEADER DESTINATION include/mariadb)
+INSTALL(EXPORT MariaDBConfig DESTINATION cmake NAMESPACE MariaDB::)
 
 # MSI
 IF(WIN32)
